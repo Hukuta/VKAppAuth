@@ -11,7 +11,7 @@ def main():
 
     password = getpass.getpass("VK Users Password:")
     vk_app_auth = VKAppAuth()
-    print vk_app_auth.auth(script_args.VK_EMAIL, password, script_args.VK_APP_ID, script_args.VK_SCOPE)
+    print(vk_app_auth.auth(script_args.VK_EMAIL, password, script_args.VK_APP_ID, script_args.VK_SCOPE))
 
 
 def args():

@@ -1,9 +1,11 @@
 # -- coding: utf-8 --
-import cookielib
-import urllib2
-import urllib
-from urlparse import urlparse
-from vk_form_parser import FormParser
+import http.cookiejar
+import urllib.error
+import urllib.parse
+import urllib.request
+from urllib.parse import urlparse, urlencode
+
+from .vk_form_parser import FormParser
 
 
 class VKAppAuth():
@@ -11,6 +13,7 @@ class VKAppAuth():
     Authorizate registred VK application by OAuth and give it access to the users data in given scope. Application
     don't use users password but access token that was only generated for this particular application.
     '''
+
     def auth_user(self, email, password, client_id, scope, opener):
         '''
         Authorizate user by parsing VK WAP login page with html form and filling needed parameters.
@@ -31,27 +34,27 @@ class VKAppAuth():
         Returns: -- Content of a page you was redirected after submission of the authorization form
                     and its url. (list [content, url])
         '''
-        #Get authorization page content
+        # Get authorization page content
         response = opener.open(
             "https://oauth.vk.com/oauth/authorize?" + \
             "redirect_uri=https://oauth.vk.com/blank.html&response_type=token&" + \
             "client_id=%s&scope=%s&display=wap" % (client_id, ",".join(scope))
-            )
-        html = response.read()
-        #Find and parse user authorization form
+        )
+        html = response.read().decode()
+        # Find and parse user authorization form
         parser = FormParser()
         parser.feed(html)
         parser.close()
 
         if not parser.form_parsed or parser.url is None or "pass" not in parser.params or \
-        "email" not in parser.params:
-                raise RuntimeError("Something wrong with a parser. Unable parse VK authorization form.")
-        #Set forms parameters, need to be filled by user
+                        "email" not in parser.params:
+            raise RuntimeError("Something wrong with a parser. Unable parse VK authorization form.")
+        # Set forms parameters, need to be filled by user
         parser.params["email"] = email
         parser.params["pass"] = password
 
         if parser.method == "post":
-            response = opener.open(parser.url, urllib.urlencode(parser.params))
+            response = opener.open(parser.url, urlencode(parser.params).encode())
         else:
             raise NotImplementedError("Method '%s'" % parser.params.method % " for user authorization form \
                 submission is currently not supported. Please implement it if there is a need.")
@@ -71,16 +74,16 @@ class VKAppAuth():
 
         Return -- Redirect url with access token with /blank.html. (string)
         '''
-        #Find and parse application authorization form
+        # Find and parse application authorization form
         parser = FormParser()
         parser.feed(html)
         parser.close()
 
         if not parser.form_parsed or parser.url is None:
-                raise RuntimeError("Something wrong with a parser. Unable parse VK application authorization form.")
+            raise RuntimeError("Something wrong with a parser. Unable parse VK application authorization form.")
 
         if parser.method == "post":
-            response = opener.open(parser.url, urllib.urlencode(parser.params))
+            response = opener.open(parser.url, urlencode(parser.params).encode())
         else:
             raise NotImplementedError("Form method '%s'" % parser.params.method + "for application authorization \
             form submission is currently not supported. Please implement it if there is a need.")
@@ -105,19 +108,19 @@ class VKAppAuth():
         if not isinstance(scope, list):
             scope = [scope]
 
-        opener = urllib2.build_opener(
-            urllib2.HTTPCookieProcessor(cookielib.CookieJar()),
-            urllib2.HTTPRedirectHandler())
+        opener = urllib.request.build_opener(
+            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()),
+            urllib.request.HTTPRedirectHandler())
 
-        #Authorizate user
+        # Authorizate user
         html, url = self.auth_user(email, password, app_id, scope, opener)
 
-        #If application was not already once authorized
+        # If application was not already once authorized
         if urlparse(url).path != "/blank.html":
             # Need to give access to requested scope
             url = self.give_access(html, opener)
 
-        #If not success
+        # If not success
         if urlparse(url).path != "/blank.html":
             raise RuntimeError("Bad responce from oauth server. An error occured by obtaining access_token.")
 
@@ -133,8 +136,9 @@ class VKAppAuth():
             kv = kv_pair.split("=")
             return kv[0], kv[1]
 
-        #Split query parameters to key, value pairs
+        # Split query parameters to key, value pairs
         answer = dict(split_key_value(kv_pair) for kv_pair in urlparse(url).fragment.split("&"))
         if "access_token" not in answer or "user_id" not in answer or "expires_in" not in answer:
             raise RuntimeError("Missing access token or users id values in answer.")
-        return {"access_token": answer["access_token"], "user_id": answer["user_id"], "expires_in": answer["expires_in"]}
+        return {"access_token": answer["access_token"], "user_id": answer["user_id"],
+                "expires_in": answer["expires_in"]}

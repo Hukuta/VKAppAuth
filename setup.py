@@ -8,14 +8,14 @@ def read(filename):
 
 setup(
     name='VKAppAuth',
-    version='0.0.1',
+    version='0.0.2',
     license='MIT',
     description='Python package for authorize a standalone VK/Vkontakte application and get'
                 'access_token for vkontakte api.',
     keywords='vkontakte vk api access_token oauth oauth2',
     long_description=open('README.rst').read() + "\n\n\n" + open('CHANGES.rst').read(),
     url='https://github.com/speechkey/vkappauth',
-    download_url='https://github.com/speechkey/VKAppAuth/tarball/0.0.1',
+    download_url='https://github.com/speechkey/VKAppAuth/tarball/0.0.2',
     author='Artem Grebenkin',
     author_email='artem.grebenkin@gmail.com',
     include_package_data=True,
@@ -30,8 +30,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Internet :: WWW/HTTP',
     ],
 )

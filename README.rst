@@ -29,7 +29,7 @@ Usage
 >>> scope = 'audio'
 >>> scope = ['audio', 'offline']
 >>> access_data = vkaa.auth(email, password, app_id, scope)
->>> print access_data
+>>> print(access_data)
 {'access_token': '41c5105ae83edc2a07896d62ed11f0b31f79f70ec1e657da65d32e497557665a33ab063b97d456530fe65', 'expires_in': '86400', 'user_id': '104184112'}
 
 License
